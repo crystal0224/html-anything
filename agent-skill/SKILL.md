@@ -47,6 +47,19 @@ description: "입력(마크다운/노트/CSV/JSON/표/원시 텍스트)을 디�
 - **실데이터 강제**: 차트·표·인용은 사용자가 준 실제 값만. 모르면 비워두고 묻는다.
 - **템플릿의 잠긴 레이아웃을 존중**: 각 SKILL.md가 "10 locked layouts" 식으로 버라이언트를 못박아 둠 — 임의 변형 말 것.
 
+## 한국어 · 전문성 정제 룰 (모든 카드/덱 공통, mandatory)
+
+한국어 결과물은 아래를 기본 적용한다. 골드 예시: **[references/example-ko-card-linear.html](references/example-ko-card-linear.html)** (XHS 1:1 레이아웃 × Linear 토큰, 아래 룰 전부 반영).
+
+1. **줄바꿈**: `body{word-break:keep-all; overflow-wrap:break-word;}` 필수. 없으면 한글이 글자 단위로 끊긴다.
+2. **CJK 자간**: Latin용 음수 트래킹을 한글엔 완화. display ≈ −1px, heading ≈ −0.5px. −2px 이상은 한글 자간이 충돌해 "조인" AI 느낌이 난다. (숫자는 Latin이라 −3~−4px 허용)
+3. **타입 스케일 1벌**: inline `font-size` 난립 금지 → `--t-*` 변수로 고정. 헤드라인은 전 카드 동일 크기. 단위(%, 원 등)는 본문보다 경량·중립색.
+4. **악센트 규율**: 브랜드 accent 색은 **카드당 정확히 1개**(핵심 수치 또는 핵심어)에만. eyebrow·라벨·페이지번호는 중립 회색. 좌측 accent 세로 바는 쓰지 말 것(≤1).
+5. **에디토리얼 폴리오**: 상단 eyebrow + page index 아래 1px hairline 머리선. 인덱스 번호는 tabular + 살짝 밝게.
+6. **빈 카드 채움**: 수치 없는 카드는 hairline callout 패널 / 체크리스트로 채운다. `margin:auto` 빈 띠 금지 → 카드는 `justify-content:space-between` 3존(상단/본문/앵커).
+7. **비율 선택**: 텍스트 위주 분석형 콘텐츠는 3:4(1080×1440)가 과하게 길어 중앙 빈 띠가 생긴다 → **1:1(1080×1080) 권장**. 이미지·리스트형은 3:4 OK.
+8. **PNG 분리 추출**: 캐러셀 업로드용 장당 PNG는 `build_cards.py` 패턴(단독 카드 HTML + `border-radius:0`·`max-width:none` override + Chrome `--screenshot` 2×) 참조.
+
 ## 내보내기 (export) 옵션 안내
 
 CLI에서는 `.html` 파일이 곧 결과물. 추가로 사용자에게 안내 가능:

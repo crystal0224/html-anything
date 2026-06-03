@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI 전환은 결국 사람 전환 · HR Research Note</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  /* ── Linear design tokens (design-md: linear.app) ── */
+  :root{
+    --canvas:#010102; --surface-1:#0f1011; --surface-2:#141516; --surface-3:#18191a;
+    --hairline:#23252a; --hairline-strong:#34343a;
+    --ink:#f7f8f8; --ink-muted:#d0d6e0; --ink-subtle:#8a8f98; --ink-tertiary:#62666d;
+    --primary:#5e6ad2; --primary-hover:#828fff;
+    /* ── ONE type scale, used everywhere (no inline overrides) ── */
+    --t-hero:72px;  --t-h:56px;  --t-stat:148px;  --t-stat-pair:112px;
+    --t-lede:29px;  --t-num:22px; --t-label:22px;  --t-meta:17px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--canvas); padding:40px 0;
+    font-family:'Pretendard Variable','Pretendard','-apple-system',sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    word-break:keep-all; overflow-wrap:break-word;   /* 한글 어절 단위 줄바꿈 (글자 단위 분리 방지) */
+  }
+  .deck{display:flex; flex-direction:column; align-items:center; gap:24px;}
+  /* depth via surface ladder + hairline, NOT drop shadow (Linear resists shadows) */
+  .card{
+    width:1080px; max-width:96vw; aspect-ratio:1/1; border-radius:24px;
+    background:var(--surface-1); border:1px solid var(--hairline);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
+    overflow:hidden; position:relative; padding:72px 64px 72px;
+    color:var(--ink); display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .card.lift{background:var(--surface-2); border-color:var(--hairline-strong);}
+
+  /* zones */
+  .top{display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:24px; border-bottom:1px solid var(--hairline);}   /* editorial folio rule */
+  .lift .top{border-bottom-color:var(--hairline-strong);}
+  .main{display:flex; flex-direction:column; gap:30px;}
+  .anchor{}
+
+  /* type scale — fixed classes */
+  .pageno{font-size:var(--t-meta); font-weight:500; color:var(--ink-tertiary);
+    letter-spacing:0.14em; font-variant-numeric:tabular-nums;}
+  /* eyebrow: neutral, letter-spaced — NOT an accent (accent is reserved for one data point) */
+  .num{font-size:18px; font-weight:600; color:var(--ink-subtle); letter-spacing:0.02em;}
+  .num b{color:var(--ink-muted); font-weight:600; font-variant-numeric:tabular-nums; margin-right:2px;}
+  .badge{display:inline-flex; align-items:center; gap:10px; padding:11px 20px; border-radius:9999px;
+    background:var(--surface-3); border:1px solid var(--hairline-strong); color:var(--ink-subtle);
+    font-size:var(--t-meta); font-weight:500; letter-spacing:0.01em;}
+  /* Korean-tuned tracking: ease the Latin-grade negative spacing so Hangul doesn't crowd */
+  .hero{font-size:var(--t-hero); font-weight:600; line-height:1.12; letter-spacing:-1px;}
+  .h{font-size:var(--t-h); font-weight:600; line-height:1.2; letter-spacing:-0.5px;}
+  .lede{font-size:var(--t-lede); font-weight:400; line-height:1.55; color:var(--ink-muted); max-width:36ch;}
+  .lede .em{color:var(--ink); font-weight:600;}
+  .lav{color:var(--primary-hover); font-weight:600;}
+
+  /* giant stat anchor — the visual hero of stat cards */
+  .stat{display:flex; align-items:flex-end; gap:24px;}
+  .stat .n{font-size:var(--t-stat); font-weight:600; letter-spacing:-4px; line-height:0.82;
+    font-variant-numeric:tabular-nums; color:var(--ink);}
+  .stat .n .pct{font-size:60px; font-weight:500; color:var(--ink-subtle); letter-spacing:-1px;}
+  .stat .lab{font-size:var(--t-label); font-weight:400; color:var(--ink-subtle);
+    line-height:1.4; max-width:18ch; padding-bottom:14px;}
+  .stat.lav .n{color:var(--primary-hover);}
+
+  /* paired stats (two numbers, comparison) */
+  .pair{display:flex; gap:48px; align-items:flex-end;}
+  .pair .col .n{font-size:var(--t-stat-pair); font-weight:600; letter-spacing:-2.5px; line-height:0.85;
+    font-variant-numeric:tabular-nums;}
+  .pair .col .n .pct{font-size:46px; font-weight:500; color:var(--ink-subtle);}
+  .pair .col .lab{font-size:19px; color:var(--ink-subtle); line-height:1.4; margin-top:14px; max-width:19ch;}
+  .pair .vs{font-size:34px; color:var(--ink-tertiary); padding-bottom:30px; font-weight:500;}
+
+  /* callout panel (fills cards with no stat) — clean hairline panel, no left accent bar */
+  .callout{background:var(--surface-3); border:1px solid var(--hairline-strong);
+    border-radius:16px; padding:38px 42px;}
+  .callout .term{font-size:18px; font-weight:600; color:var(--ink-subtle); letter-spacing:0.06em;
+    text-transform:uppercase; margin-bottom:16px;}
+  .callout .desc{font-size:27px; font-weight:500; color:var(--ink); line-height:1.5; letter-spacing:-0.3px;}
+
+  /* checklist (fills HR card) */
+  .checks{display:flex; flex-direction:column; gap:22px;}
+  .checks li{list-style:none; display:flex; gap:18px; align-items:flex-start;
+    font-size:27px; font-weight:500; color:var(--ink); line-height:1.4;}
+  .checks li::before{content:""; width:12px; height:12px; border-radius:9999px;
+    background:var(--primary); margin-top:12px; flex:none;}
+
+  .foot{display:flex; align-items:flex-end; justify-content:space-between;}
+  .watermark{font-size:var(--t-meta); font-weight:500; color:var(--ink-tertiary); letter-spacing:-0.1px;}
+  .swipe{font-size:21px; color:var(--ink-subtle); font-weight:500;}
+  .src{font-size:19px; font-weight:400; color:var(--ink-subtle); line-height:1.55; max-width:46ch;}
+  .src a{color:var(--primary-hover); text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 01 · cover -->
+  <div class="card lift">
+    <div class="top"><span class="badge">● HR Research Note · BCG 2026</span><span class="pageno">01 / 07</span></div>
+    <div class="main">
+      <div class="num">AI 전환이 자꾸 멈출 때</div>
+      <h1 class="hero">기술을 다시<br/>들여다보는데,<br/>사실은 <span class="lav">사람</span>이<br/>안 풀린 거였어요.</h1>
+    </div>
+    <div class="foot"><span class="watermark">Crystal · People Analytics</span><span class="swipe">밀어서 7장 →</span></div>
+  </div>
+
+  <!-- 02 · 긴장 + 핵심 수치 -->
+  <div class="card">
+    <div class="top"><span class="num">왜 멈추나</span><span class="pageno">02 / 07</span></div>
+    <div class="main">
+      <h2 class="h">막히는 진짜 이유는<br/>대개 기계가 아니라<br/>사람 쪽이더라고요</h2>
+      <p class="lede">모델·툴·데이터를 다시 보는 건 필요한 점검인데요. BCG는 병목이 <span class="em">사람이 뭘 느끼고 어떻게 움직이는지</span>를 안 다뤄서일 수 있다고 봐요.</p>
+    </div>
+    <div class="anchor">
+      <div class="pair">
+        <div class="col"><div class="n lav" style="color:var(--primary-hover)">5<span class="pct">%</span></div><div class="lab">AI로 실질 가치를 만든 기업</div></div>
+        <div class="vs">→</div>
+        <div class="col"><div class="n">70<span class="pct">%</span></div><div class="lab">성공 전환의 가치가 나온 곳 = 사람 쪽 행동</div></div>
+      </div>
+      <div class="foot" style="margin-top:40px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+  <!-- 03 · point 1 -->
+  <div class="card">
+    <div class="top"><span class="num"><b>01</b>&nbsp;&nbsp;진짜 합의</span><span class="pageno">03 / 07</span></div>
+    <div class="main">
+      <h2 class="h">다 끄덕이는데<br/>각자 다른 성공을<br/>그리고 있어요</h2>
+      <p class="lede">“AI 하자”에 비용 절감·생산성·혁신·성장이 한 문장에 다 섞이거든요. BCG는 이걸 <span class="lav">false alignment</span>라고 불러요.</p>
+    </div>
+    <div class="anchor">
+      <div class="stat"><div class="n">3~4<span style="font-size:48px; color:var(--ink-tertiary); letter-spacing:-1px"> vs </span>6~7</div><div class="lab">성공 기업은 use case에 집중, 덜 풀린 쪽은 욕심껏 벌림</div></div>
+      <div class="foot" style="margin-top:40px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+  <!-- 04 · point 2 (no stat → callout fills) -->
+  <div class="card">
+    <div class="top"><span class="num"><b>02</b>&nbsp;&nbsp;참여보다 결정권</span><span class="pageno">04 / 07</span></div>
+    <div class="main">
+      <h2 class="h">설명회에 부르는 걸론<br/>부족하더라고요</h2>
+      <p class="lede">AI가 일을 바꾸면 특히 중간관리자 자리가 흔들려요. 자기 팀에 맞게 새 워크플로를 직접 설계해볼 <span class="lav">결정권(agency)</span>이 있어야, 그 역할을 준비된 채로 맡게 돼요.</p>
+    </div>
+    <div class="anchor">
+      <div class="callout">
+        <div class="term">IKEA effect</div>
+        <div class="desc">자기가 만든 데 손댄 것에 더 애착을 갖는 심리. 역할 변화에 그대로 붙여놓은 셈이에요.</div>
+      </div>
+      <div class="foot" style="margin-top:36px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+  <!-- 05 · point 3 (76 vs 31) -->
+  <div class="card">
+    <div class="top"><span class="num"><b>03</b>&nbsp;&nbsp;감정을 감으로 짐작</span><span class="pageno">05 / 07</span></div>
+    <div class="main">
+      <h2 class="h">임원의 체감과<br/>구성원의 체감은<br/>꽤 멀어요</h2>
+      <p class="lede">두려움·상실감을 못 읽으면 사용률만 멀쩡하고 속은 비어가요. 감정은 <span class="em">행동을 좌우하는 운영 데이터</span>에 가까워요.</p>
+    </div>
+    <div class="anchor">
+      <div class="pair">
+        <div class="col"><div class="n">76<span class="pct">%</span></div><div class="lab">“구성원이 AI에 들떠 있다”고 믿은 임원</div></div>
+        <div class="vs">vs</div>
+        <div class="col"><div class="n" style="color:var(--primary-hover)">31<span class="pct">%</span></div><div class="lab">실제로 그렇게 느낀 구성원</div></div>
+      </div>
+      <div class="foot" style="margin-top:40px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+  <!-- 06 · HR (checklist + stat fills) -->
+  <div class="card">
+    <div class="top"><span class="num">HR이 볼 것</span><span class="pageno">06 / 07</span></div>
+    <div class="main">
+      <h2 class="h">교육 시간·사용률로만<br/>보면 빠지는 게 있어요</h2>
+      <ul class="checks">
+        <li>쓸 줄 아는지 (skill)</li>
+        <li>써도 된다고 느끼는지 (문화적 허가)</li>
+        <li>전문성이 줄어든다 vs 늘어난다, 어느 쪽으로 읽는지</li>
+      </ul>
+    </div>
+    <div class="anchor">
+      <div class="stat lav"><div class="n">36<span class="pct">%</span></div><div class="lab">필요한 스킬 교육을 받았다고 느낀 사람. 나머지 ⅔는 아직 채비가 덜 됐다고 느껴요</div></div>
+      <div class="foot" style="margin-top:40px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+  <!-- 07 · 마무리 + 출처 -->
+  <div class="card lift">
+    <div class="top"><span class="num">결국 남는 질문</span><span class="pageno">07 / 07</span></div>
+    <div class="main">
+      <h1 class="hero">우리 조직은<br/>사람의 감정을<br/><span class="lav">운영 데이터</span>로<br/>다루고 있을까요?</h1>
+      <p class="lede">아니면 여전히 리더의 감으로 짐작하고 있을까요.</p>
+    </div>
+    <div class="anchor">
+      <p class="src">📚 Dhar, J. et al. (2026). <em>Why AI Change Is Actually a People Change.</em> Boston Consulting Group. <a href="https://www.bcg.com/publications/2026/why-ai-change-is-actually-a-people-change">bcg.com → 2026/why-ai-change-is-actually-a-people-change</a></p>
+      <div class="foot" style="margin-top:32px"><span class="watermark">Crystal · People Analytics</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
